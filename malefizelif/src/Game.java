@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Game {
@@ -8,13 +9,19 @@ public class Game {
     private Player currentPlayer;
     private int currentPlayerIndex;
     private boolean hasRolled;
+    private Random random;
 
-    public Game() {
+    public Game(long seed) {
         board = new Board();
         players = new ArrayList<>();
         currentPlayer = null;
         currentPlayerIndex = 0;
         hasRolled = false;
+        if (seed!= 0) {
+            random = new Random(seed);
+        } else {
+            random = null;
+        }
     }
 
     public void startGame() {
@@ -75,7 +82,9 @@ public class Game {
     }
 
     private int rollDice(String diceRoll) {
-        if (diceRoll!= null) {
+        if (random!= null) {
+            return random.nextInt(6) + 1;
+        } else {
             try {
                 int roll = Integer.parseInt(diceRoll);
                 if (roll < 1 || roll > 6) {
@@ -87,9 +96,6 @@ public class Game {
                 System.out.println("Ungültiger Würfelwurf. Bitte geben Sie eine Zahl ein.");
                 return -1;
             }
-        } else {
-            // Würfel-Zufallsgenerator auf wish bestelltA
-            return (int) (Math.random() * 6) + 1;
         }
     }
 
@@ -111,7 +117,8 @@ public class Game {
     }
 
     public static void main(String[] args) {
-        Game game = new Game();
+        long seed = 0; // 0 für keinen Seed, oder eine beliebige Zahl für einen Seed
+        Game game = new Game(seed);
         game.startGame();
     }
 }
