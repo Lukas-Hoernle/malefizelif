@@ -1,5 +1,3 @@
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -9,12 +7,14 @@ public class Game {
     private List<Player> players;
     private Player currentPlayer;
     private int currentPlayerIndex;
+    private boolean hasRolled;
 
     public Game() {
         board = new Board();
         players = new ArrayList<>();
         currentPlayer = null;
         currentPlayerIndex = 0;
+        hasRolled = false;
     }
 
     public void startGame() {
@@ -45,8 +45,20 @@ public class Game {
                     board.showBoard();
                     break;
                 case "roll":
-                    int diceRoll = rollDice();
-                    System.out.println("Würfelwurf: " + diceRoll);
+                    if (hasRolled) {
+                        System.out.println("Sie haben bereits gewürfelt. Bitte geben Sie einen anderen Befehl ein.");
+                        break;
+                    }
+                    System.out.println("Bitte geben Sie den Würfelwurf ein (optional):");
+                    String diceRoll = scanner.nextLine().trim();
+                    if (diceRoll.isEmpty()) {
+                        diceRoll = null;
+                    }
+                    int roll = rollDice(diceRoll);
+                    if (roll!= -1) {
+                        System.out.println("Würfelwurf: " + roll);
+                        hasRolled = true;
+                    }
                     break;
                 case "move":
                     System.out.println("Bitte geben Sie die Feldnummer ein, auf die Sie ziehen möchten:");
@@ -62,9 +74,23 @@ public class Game {
         }
     }
 
-    private int rollDice() {
-        // Pseudozufallszahlengenerator für den Würfelwurf
-        return (int) (Math.random() * 6) + 1;
+    private int rollDice(String diceRoll) {
+        if (diceRoll!= null) {
+            try {
+                int roll = Integer.parseInt(diceRoll);
+                if (roll < 1 || roll > 6) {
+                    System.out.println("Ungültiger Würfelwurf. Bitte geben Sie eine Zahl zwischen 1 und 6 ein.");
+                    return -1;
+                }
+                return roll;
+            } catch (NumberFormatException e) {
+                System.out.println("Ungültiger Würfelwurf. Bitte geben Sie eine Zahl ein.");
+                return -1;
+            }
+        } else {
+            // Würfel-Zufallsgenerator auf wish bestelltA
+            return (int) (Math.random() * 6) + 1;
+        }
     }
 
     private void movePlayer(int fieldNumber) {
@@ -80,39 +106,12 @@ public class Game {
     private void skipTurn() {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
         currentPlayer = players.get(currentPlayerIndex);
+        hasRolled = false;
         System.out.println("Spieler " + currentPlayer.getName() + " ist an der Reihe.");
-    }
-
-    public void loadBoardFromFile(String filename) {
-        try {
-            File file = new File(filename);
-            Scanner scanner = new Scanner(file);
-            int lineNumber = 0;
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                if (line.startsWith("#")) {
-                    // Kommentarzeile, ignorieren
-                    continue;
-                }
-                String[] fields = line.split(" ");
-                for (int i = 0; i < fields.length; i++) {
-                    Field field = new Field(lineNumber, i);
-                    field.setObstacle(fields[i].equals("X"));
-                    field.setPlayer(fields[i].equals("S")? currentPlayer : null);
-                    board.setField(field, lineNumber, i);
-                }
-                lineNumber++;
-            }
-            scanner.close();
-        } catch (FileNotFoundException e) {
-            System.out.println("Datei nicht gefunden: " + filename);
-        }
     }
 
     public static void main(String[] args) {
         Game game = new Game();
-        game.loadBoardFromFile("board.txt");
         game.startGame();
     }
 }
-		
