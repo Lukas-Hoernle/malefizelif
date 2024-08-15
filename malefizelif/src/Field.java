@@ -1,14 +1,14 @@
 public class Field {
     private int x;
     private int y;
-    private boolean isObstacle;
+    private boolean obstacle;
     private Player player;
 
     public Field(int x, int y) {
         this.x = x;
         this.y = y;
-        isObstacle = false;
-        player = null;
+        this.obstacle = false;
+        this.player = null;
     }
 
     public int getX() {
@@ -19,12 +19,12 @@ public class Field {
         return y;
     }
 
-    public boolean isObstacle() {
-        return isObstacle;
+    public boolean getObstacle() {
+        return obstacle;
     }
 
     public void setObstacle(boolean obstacle) {
-        isObstacle = obstacle;
+        this.obstacle = obstacle;
     }
 
     public Player getPlayer() {

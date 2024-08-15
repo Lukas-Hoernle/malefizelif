@@ -4,7 +4,7 @@ public class Player {
 
     public Player(String name) {
         this.name = name;
-        currentField = null;
+        this.currentField = null;
     }
 
     public String getName() {
@@ -16,6 +16,7 @@ public class Player {
     }
 
     public void setCurrentField(Field field) {
-        currentField = field;
+        this.currentField = field;
+        field.setPlayer(this);
     }
 }

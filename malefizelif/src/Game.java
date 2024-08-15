@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -6,11 +8,13 @@ public class Game {
     private Board board;
     private List<Player> players;
     private Player currentPlayer;
+    private int currentPlayerIndex;
 
     public Game() {
         board = new Board();
         players = new ArrayList<>();
         currentPlayer = null;
+        currentPlayerIndex = 0;
     }
 
     public void startGame() {
@@ -59,30 +63,56 @@ public class Game {
     }
 
     private int rollDice() {
+        // Pseudozufallszahlengenerator für den Würfelwurf
         return (int) (Math.random() * 6) + 1;
     }
 
     private void movePlayer(int fieldNumber) {
         Field targetField = board.getField(fieldNumber);
         if (targetField!= null) {
-            if (targetField.isObstacle()) {
-                System.out.println("Feld ist ein Hindernis!");
-            } else {
-                currentPlayer.setCurrentField(targetField);
-                System.out.println("Spieler bewegt sich auf Feld " + fieldNumber);
-            }
+            currentPlayer.setCurrentField(targetField);
+            System.out.println("Spieler " + currentPlayer.getName() + " ist auf Feld " + fieldNumber + " gelandet.");
         } else {
-            System.out.println("Feld nicht gefunden!");
+            System.out.println("Feld " + fieldNumber + " existiert nicht.");
         }
     }
 
     private void skipTurn() {
-        currentPlayer = players.get((players.indexOf(currentPlayer) + 1) % players.size());
-        System.out.println("Zug übersprungen. Aktueller Spieler: " + currentPlayer.getName());
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+        currentPlayer = players.get(currentPlayerIndex);
+        System.out.println("Spieler " + currentPlayer.getName() + " ist an der Reihe.");
+    }
+
+    public void loadBoardFromFile(String filename) {
+        try {
+            File file = new File(filename);
+            Scanner scanner = new Scanner(file);
+            int lineNumber = 0;
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (line.startsWith("#")) {
+                    // Kommentarzeile, ignorieren
+                    continue;
+                }
+                String[] fields = line.split(" ");
+                for (int i = 0; i < fields.length; i++) {
+                    Field field = new Field(lineNumber, i);
+                    field.setObstacle(fields[i].equals("X"));
+                    field.setPlayer(fields[i].equals("S")? currentPlayer : null);
+                    board.setField(field, lineNumber, i);
+                }
+                lineNumber++;
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Datei nicht gefunden: " + filename);
+        }
     }
 
     public static void main(String[] args) {
         Game game = new Game();
+        game.loadBoardFromFile("board.txt");
         game.startGame();
     }
 }
+		
